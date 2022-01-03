@@ -666,13 +666,14 @@ def print_pre_change_info(out, auto, gold, auto_mentions, gold_mention_set, text
 		mtext = coreference_rendering.mention_text(text, mention).lower()
 		print("Cataphoric properties", mentions[mention], mtext, file=out['out'])
 
-def process_document(doc_name, part_name, gold_doc, auto_doc, out, remove_singletons=True):
-	for ofile in [out['out'], out['short out']]:
-		print(file=ofile)
-		print('-' * 79, file=ofile)
-		print(doc_name, part_name, file=ofile)
-		print('-' * 79, file=ofile)
-		print(file=ofile)
+def process_document(doc_name, part_name, gold_doc, auto_doc, out, remove_singletons=True, log_output=True):
+	if log_output:
+		for ofile in [out['out'], out['short out']]:
+			print(file=ofile)
+			print('-' * 79, file=ofile)
+			print(doc_name, part_name, file=ofile)
+			print('-' * 79, file=ofile)
+			print(file=ofile)
 	text = gold_doc['text']
 
 	gold_parses = gold_doc['parses']
@@ -698,35 +699,39 @@ def process_document(doc_name, part_name, gold_doc, auto_doc, out, remove_single
 	gold_mention_set = coreference.set_of_mentions(gold_clusters)
 	auto_mention_set = coreference.set_of_mentions(auto_clusters)
 
-	coreference_rendering.print_conll_style_part(out['system output'], text, auto_mentions, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['gold'], text, gold_mentions, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['error: original'], text, auto_mentions, doc_name, part_name)
+	if log_output:
+		coreference_rendering.print_conll_style_part(out['system output'], text, auto_mentions, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['gold'], text, gold_mentions, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: original'], text, auto_mentions, doc_name, part_name)
 
 	# Fix boundary match errors
 	errors = []
 	span_errors = match_boundaries(gold_mention_set, auto_mention_set, auto_mentions, auto_clusters, text, gold_parses, gold_heads)
-	if len(span_errors) == 0:
+	if len(span_errors) == 0 and log_output:
 		print("No", end=' ', file=out['out'])
 		print("No", end=' ', file=out['short out'])
-	print("Span Errors: (system, gold)", file=out['out'])
-	print("Span Errors: (system, gold)", file=out['short out'])
+	if log_output:
+		print("Span Errors: (system, gold)", file=out['out'])
+		print("Span Errors: (system, gold)", file=out['short out'])
 	for error in span_errors:
 		errors.append(('span mismatch', error))
 		before = coreference_rendering.print_mention(None, False, gold_parses, gold_heads, text, error[0], return_str=True)
 		after = coreference_rendering.print_mention(None, False, gold_parses, gold_heads, text, error[1], return_str=True)
-		print('{:<50}    {:<50}'.format(before, after), file=out['out'])
-		print('{:<50}    {:<50}'.format(before, after), file=out['short out'])
-	print(file=out['out'])
-	print(file=out['short out'])
-	for error in errors:
-		print('span mismatch', error, file=out['out'])
-		print(['span error'] + list(error[1]), file=out['properties'])
-	print(file=out['out'])
-	print('-' * 79, file=out['out'])
-	print(file=out['short out'])
-	print('-' * 79, file=out['short out'])
+		if log_output:
+			print('{:<50}    {:<50}'.format(before, after), file=out['out'])
+			print('{:<50}    {:<50}'.format(before, after), file=out['short out'])
+	if log_output:
+		print(file=out['out'])
+		print(file=out['short out'])
+		for error in errors:
+			print('span mismatch', error, file=out['out'])
+			print(['span error'] + list(error[1]), file=out['properties'])
+		print(file=out['out'])
+		print('-' * 79, file=out['out'])
+		print(file=out['short out'])
+		print('-' * 79, file=out['short out'])
 
-	coreference_rendering.print_conll_style_part(out['error: span mismatch'], text, auto_mentions, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: span mismatch'], text, auto_mentions, doc_name, part_name)
 
 	auto_mentions_split = auto_mentions.copy()
 	auto_mentions_extra_mention = auto_mentions.copy()
@@ -751,16 +756,19 @@ def process_document(doc_name, part_name, gold_doc, auto_doc, out, remove_single
 			continue
 
 		# Print clusters with errors shown
-		print(file=out['out'])
-		print(file=out['short out'])
-		colours = coreference_rendering.print_cluster_error_group([auto, gold], out['out'], text, gold_parses, gold_heads, gold_mentions)
-		colours2 = coreference_rendering.print_cluster_error_group([auto, gold], out['short out'], text, gold_parses, gold_heads, gold_mentions)
+		if log_output:
+			print(file=out['out'])
+			print(file=out['short out'])
+			colours = coreference_rendering.print_cluster_error_group([auto, gold], out['out'], text, gold_parses, gold_heads, gold_mentions)
+			colours2 = coreference_rendering.print_cluster_error_group([auto, gold], out['short out'], text, gold_parses, gold_heads, gold_mentions)
 
 		# Work out the errors
 		changes = repair(auto, gold, auto_mentions, gold_mention_set, text, gold_parses, gold_heads, gold_clusters, gold_mentions, gold_doc)
-		print("\nRaw changes:", file=out['out'])
+		if log_output:
+			print("\nRaw changes:", file=out['out'])
 		for name in changes:
-			print(name, len(changes[name]), file=out['out'])
+			if log_output:
+				print(name, len(changes[name]), file=out['out'])
 			for change in changes[name]:
 				errors.append(('raw ' + name, change))
 
@@ -854,8 +862,9 @@ def process_document(doc_name, part_name, gold_doc, auto_doc, out, remove_single
 					auto_mentions_missing_entity_prog[mention] = max_cluster
 
 		# Aggregate and count errors
-		print("\nCategorised:", file=out['out'])
-		print("\nErrors:", file=out['short out'])
+		if log_output:
+			print("\nCategorised:", file=out['out'])
+			print("\nErrors:", file=out['short out'])
 		rename = {
 			'span mismatch': "Span Error",
 			'split': 'Conflated Entities',
@@ -866,45 +875,50 @@ def process_document(doc_name, part_name, gold_doc, auto_doc, out, remove_single
 			'missing entity': 'Missing Entity'
 		}
 		for name in changes:
-			if len(changes[name]) > 0:
+			if len(changes[name]) > 0 and log_output:
 				print(len(changes[name]), rename[name], file=out['out'])
 				print(len(changes[name]), rename[name], file=out['short out'])
-		print('\nDetailed error listing:', file=out['out'])
+		if log_output:
+			print('\nDetailed error listing:', file=out['out'])
 		for name in changes:
 			for change in changes[name]:
 				mention = None
 				if len(change[0]) == 1:
 					mention = change[0].copy().pop()
 				if mention is not None:
-					print(name, end=' ', file=out['out'])
-					if mention in gold_mentions:
-						colour = 15
-						if gold_mentions[mention] in colours:
-							colour = colours[gold_mentions[mention]]
-						coreference_rendering.print_mention(out['out'], False, gold_parses, gold_heads, text, mention, colour)
-					else:
-						coreference_rendering.print_mention(out['out'], False, gold_parses, gold_heads, text, mention, extra=True)
-				print(name, change, file=out['out'])
-				print("Properties included:", name, change[-1], file=out['out'])
-				print([name] + change[-1], file=out['properties'])
+					if log_output:
+						print(name, end=' ', file=out['out'])
+						if mention in gold_mentions:
+							colour = 15
+							if gold_mentions[mention] in colours:
+								colour = colours[gold_mentions[mention]]
+							coreference_rendering.print_mention(out['out'], False, gold_parses, gold_heads, text, mention, colour)
+						else:
+							coreference_rendering.print_mention(out['out'], False, gold_parses, gold_heads, text, mention, extra=True)
+				if log_output:
+					print(name, change, file=out['out'])
+					print("Properties included:", name, change[-1], file=out['out'])
+					print([name] + change[-1], file=out['properties'])
 				errors.append((name, change))
-		print(file=out['out'])
-		print('-' * 79, file=out['out'])
-		print(file=out['short out'])
-		print('-' * 79, file=out['short out'])
+		if log_output:
+			print(file=out['out'])
+			print('-' * 79, file=out['out'])
+			print(file=out['short out'])
+			print('-' * 79, file=out['short out'])
 
 	# Print corrected output
-	coreference_rendering.print_conll_style_part(out['error: split'], text, auto_mentions_split, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['error: extra mention'], text, auto_mentions_extra_mention, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['error: extra entity'], text, auto_mentions_extra_entity, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['error: merge'], text, auto_mentions_merge, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['error: missing mention'], text, auto_mentions_missing_mention, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['error: missing entity'], text, auto_mentions_missing_entity, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['error: extra mention prog'], text, auto_mentions_extra_mention_prog, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['error: extra entity prog'], text, auto_mentions_extra_entity_prog, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['error: merge prog'], text, auto_mentions_merge_prog, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['error: missing mention prog'], text, auto_mentions_missing_mention_prog, doc_name, part_name)
-	coreference_rendering.print_conll_style_part(out['error: missing entity prog'], text, auto_mentions_missing_entity_prog, doc_name, part_name)
+	if log_output:
+		coreference_rendering.print_conll_style_part(out['error: split'], text, auto_mentions_split, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: extra mention'], text, auto_mentions_extra_mention, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: extra entity'], text, auto_mentions_extra_entity, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: merge'], text, auto_mentions_merge, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: missing mention'], text, auto_mentions_missing_mention, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: missing entity'], text, auto_mentions_missing_entity, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: extra mention prog'], text, auto_mentions_extra_mention_prog, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: extra entity prog'], text, auto_mentions_extra_entity_prog, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: merge prog'], text, auto_mentions_merge_prog, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: missing mention prog'], text, auto_mentions_missing_mention_prog, doc_name, part_name)
+		coreference_rendering.print_conll_style_part(out['error: missing entity prog'], text, auto_mentions_missing_entity_prog, doc_name, part_name)
 
 	return errors
 
