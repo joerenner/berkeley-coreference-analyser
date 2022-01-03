@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
+from __future__ import absolute_import
+from __future__ import print_function
 def coreference_cluster_match(gold, auto):
 	if len(gold) != len(auto):
 		return False
@@ -47,7 +49,7 @@ def calc_prf(match, gold, test):
 		return 0.0, 0.0, 0.0
 
 if __name__ == "__main__":
-	print "Running doctest"
+	print("Running doctest")
 	import doctest
 	doctest.testmod()
 

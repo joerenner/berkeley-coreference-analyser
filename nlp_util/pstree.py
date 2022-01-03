@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+from __future__ import print_function
 from collections import defaultdict
+from six.moves import range
 
 DEFAULT_LABEL = 'label_not_set'
 TRACE_LABEL = '-NONE-'
@@ -144,17 +147,17 @@ class PSTree:
 		structure.'''
 		ans = True
 		if len(self.subtrees) > 0:
-			for i in xrange(len(self.subtrees)):
+			for i in range(len(self.subtrees)):
 				subtree = self.subtrees[i]
 				if subtree.parent != self:
-					print "bad parent link"
+					print("bad parent link")
 					ans = False
 				if i > 0 and self.subtrees[i - 1].span[1] != subtree.span[0]:
-					print "Subtree spans don't match"
+					print("Subtree spans don't match")
 					ans = False
 				ans = ans and subtree.check_consistency()
 			if self.span != (self.subtrees[0].span[0], self.subtrees[-1].span[1]):
-				print "Span doesn't match subtree spans"
+				print("Span doesn't match subtree spans")
 				ans = False
 		return ans
 
@@ -357,7 +360,7 @@ def clone_and_find(nodes):
 
 
 if __name__ == '__main__':
-	print "Running doctest"
+	print("Running doctest")
 	import doctest
 	doctest.testmod()
 

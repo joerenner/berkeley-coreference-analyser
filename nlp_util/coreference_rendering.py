@@ -2,10 +2,13 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
+from __future__ import absolute_import
+from __future__ import print_function
 import sys, string
-import render_tree, coreference_reading, head_finder, coreference, init
+from . import render_tree, coreference_reading, head_finder, coreference, init
 
 from collections import defaultdict
+from six.moves import range
 
 # TODO:
 # Add ordering information for the context printing
@@ -123,7 +126,7 @@ def print_conll_style_part(out, text, mentions, doc, part):
 	if "tc/ch/00/ch" in doc_str and '9' not in doc_str:
 		val = int(doc_str.split('_')[-1]) * 10 - 1
 		doc_str = "tc/ch/00/ch_%04d" % val
-	print >> out, "#begin document (%s); part %s" % (doc_str, part)
+	print("#begin document (%s); part %s" % (doc_str, part), file=out)
 	starts = defaultdict(lambda: [])
 	ends = defaultdict(lambda: [])
 	singles = defaultdict(lambda: [])
@@ -135,8 +138,8 @@ def print_conll_style_part(out, text, mentions, doc, part):
 			starts[mention[0], mention[1]].append(cluster_id)
 			ends[mention[0], mention[2] - 1].append(cluster_id)
 
-	for i in xrange(len(text)):
-		for j in xrange(len(text[i])):
+	for i in range(len(text)):
+		for j in range(len(text[i])):
 			coref = []
 			if (i, j) in starts:
 				for cluster_id in starts[i, j]:
@@ -151,10 +154,10 @@ def print_conll_style_part(out, text, mentions, doc, part):
 				coref = '-'
 			else:
 				coref = '|'.join(coref)
-			print >> out, "%s\t%d\t%d\t%s\t%s" % (doc_str, int(part), j, text[i][j], coref)
-		print >> out
+			print("%s\t%d\t%d\t%s\t%s" % (doc_str, int(part), j, text[i][j], coref), file=out)
+		print(file=out)
 
-	print >> out, "#end document"
+	print("#end document", file=out)
 
 def print_conll_style(data, gold, out):
 	# Define an order
@@ -176,7 +179,7 @@ def mention_text(text, mention, parses=None, heads=None, colour=None):
 		if node is not None:
 			head = head_finder.get_head(heads[sentence], node)
 	ans = []
-	for i in xrange(start, end):
+	for i in range(start, end):
 		ans.append(text[sentence][i])
 		if head is not None:
 			if head[0][0] == i:
@@ -232,8 +235,8 @@ def print_headless_mentions(out, parses, heads, mentions):
 		if end - start > 1:
 			node = parses[sentence].get_nodes('lowest', start, end)
 			if node is None:
-				print >> out, mention_text(text, mention)
-				print >> out, render_tree.text_tree(parses[sentence], False)
+				print(mention_text(text, mention), file=out)
+				print(render_tree.text_tree(parses[sentence], False), file=out)
 
 def print_mention(out, with_context, gold_parses, gold_heads, text, mention, colour=None, extra=False, return_str=False):
 	pre_context, post_context = mention_context(text, mention)
@@ -257,7 +260,7 @@ def print_mention(out, with_context, gold_parses, gold_heads, text, mention, col
 	if return_str:
 		return to_print
 	else:
-		print >> out, to_print
+		print(to_print, file=out)
 
 def print_cluster_errors(groups, out_errors, out_context, text, gold_parses, gold_heads, auto_clusters, gold_clusters, gold_mentions):
 	'''Mentions are printed to show both system and gold clusters:
@@ -266,7 +269,7 @@ def print_cluster_errors(groups, out_errors, out_context, text, gold_parses, gol
 For each mention the tuple of numbers indicates (sentence, start word, end word
 + 1).  Colours reset after each dsahed line.'''
 	mixed_groups = []
-	for i in xrange(len(groups)):
+	for i in range(len(groups)):
 		auto, gold = groups[i]
 		if len(auto) == 0:
 			# All missing
@@ -291,12 +294,12 @@ For each mention the tuple of numbers indicates (sentence, start word, end word
 	for group in mixed_groups:
 		print_cluster_error_group(group, out_errors, text, gold_parses, gold_heads, gold_mentions)
 		print_cluster_error_group(group, out_context, text, gold_parses, gold_heads, gold_mentions, True)
-		print >> out_errors
-		print >> out_context
-		print >> out_errors, '-' * 60
-		print >> out_context, '-' * 60
-		print >> out_errors
-		print >> out_context
+		print(file=out_errors)
+		print(file=out_context)
+		print('-' * 60, file=out_errors)
+		print('-' * 60, file=out_context)
+		print(file=out_errors)
+		print(file=out_context)
 		for part in group:
 			for entity in part:
 				covered.update(entity)
@@ -345,7 +348,7 @@ def print_cluster_error_group(group, out, text, gold_parses, gold_heads, gold_me
 			if first:
 				first = False
 			else:
-				print >> out
+				print(file=out)
 			sorted_cluster = list(cluster)
 			sorted_cluster.sort()
 			for mention in sorted_cluster:
@@ -362,8 +365,8 @@ def print_cluster_error_group(group, out, text, gold_parses, gold_heads, gold_me
 					print_mention(out, with_context, gold_parses, gold_heads, text, mention, colour)
 
 	if len(missing) > 0:
-		print >> out
-		print >> out, "Missing:"
+		print(file=out)
+		print("Missing:", file=out)
 		for cluster in gold:
 			sorted_cluster = list(cluster)
 			sorted_cluster.sort()
@@ -378,8 +381,8 @@ def print_cluster_error_group(group, out, text, gold_parses, gold_heads, gold_me
 def print_cluster_missing(out_errors, out_context, out, text, gold_cluster_set, covered, gold_parses, gold_heads):
 	'''Clusters that consist entirely of mentions that are not present in the
 system output.'''
-	print >> out_errors, "Missing:"
-	print >> out_context, "Missing:"
+	print("Missing:", file=out_errors)
+	print("Missing:", file=out_context)
 	for entity in gold_cluster_set:
 		printed = 0
 		for mention in entity:
@@ -389,21 +392,21 @@ system output.'''
 				print_mention(out_context, True, gold_parses, gold_heads, text, mention)
 				printed += 1
 		if printed > 0 and len(entity) != printed:
-			print >> sys.stderr, "Covered isn't being filled correctly (missing)", printed, len(entity)
-			print >> sys.stderr, entity
+			print("Covered isn't being filled correctly (missing)", printed, len(entity), file=sys.stderr)
+			print(entity, file=sys.stderr)
 			for mention in entity:
 				if mention not in covered:
-					print >> sys.stderr, mention
+					print(mention, file=sys.stderr)
 		if printed > 0:
-			print >> out_errors
-			print >> out_context
-			print >> out
+			print(file=out_errors)
+			print(file=out_context)
+			print(file=out)
 
 def print_cluster_extra(out_errors, out_context, out, text, auto_cluster_set, covered, gold_parses, gold_heads):
 	'''Clusters that consist entirely of mentions that are not present in the
 gold standard.'''
-	print >> out_errors, "Extra:"
-	print >> out_context, "Extra:"
+	print("Extra:", file=out_errors)
+	print("Extra:", file=out_context)
 	for entity in auto_cluster_set:
 		printed = 0
 		for mention in entity:
@@ -413,19 +416,19 @@ gold standard.'''
 				print_mention(out_context, True, gold_parses, gold_heads, text, mention, extra=True)
 				printed += 1
 		if printed > 0 and len(entity) != printed:
-			print >> sys.stderr, "Covered isn't being filled correctly (extra)", printed, len(entity)
-			print >> sys.stderr, entity
+			print("Covered isn't being filled correctly (extra)", printed, len(entity), file=sys.stderr)
+			print(entity, file=sys.stderr)
 			for mention in entity:
 				if mention not in covered:
-					print >> sys.stderr, mention
+					print(mention, file=sys.stderr)
 		if printed > 0:
-			print >> out_errors
-			print >> out_context
-			print >> out
-	print >> out_errors, '-' * 60
-	print >> out_context, '-' * 60
-	print >> out_errors
-	print >> out_context
+			print(file=out_errors)
+			print(file=out_context)
+			print(file=out)
+	print('-' * 60, file=out_errors)
+	print('-' * 60, file=out_context)
+	print(file=out_errors)
+	print(file=out_context)
 
 def print_mention_list(out, gold_mentions, auto_mention_set, gold_parses, gold_heads, text):
 	'''Mentions in each document:
@@ -481,16 +484,16 @@ for extra, and purple where they overlap.'''
 
 	words = defaultdict(lambda: defaultdict(lambda: [False, False]))
 	for mention in gold_mentions:
-		for i in xrange(mention[1], mention[2]):
+		for i in range(mention[1], mention[2]):
 			words[mention[0], i][mention][0] = True
 	for mention in auto_mention_set:
-		for i in xrange(mention[1], mention[2]):
+		for i in range(mention[1], mention[2]):
 			words[mention[0], i][mention][1] = True
 
 	# Printing
-	for sentence in xrange(len(text)):
+	for sentence in range(len(text)):
 		output = []
-		for word in xrange(len(text[sentence])):
+		for word in range(len(text[sentence])):
 			text_word = text[sentence][word]
 			if (sentence, word) in words:
 				mention_dict = words[(sentence, word)]
@@ -579,7 +582,7 @@ for extra, and purple where they overlap.'''
 				text_word = start + "\033[38;5;{}m{}\033[0m".format(colour, text_word) + end
 			output.append(text_word)
 			word += 1
-		print >> out, ' '.join(output) + '\n'
+		print(' '.join(output) + '\n', file=out)
 		sentence += 1
 
 ###if __name__ == "__main__":

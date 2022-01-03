@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 from nlp_util import coreference_reading, coreference_rendering, coreference, init
 
@@ -35,7 +37,7 @@ if __name__ == '__main__':
 		]:
 		instructions = function.__doc__.split('\n')
 		instructions = ['# ' + inst for inst in instructions]
-		print >> outfile, '\n'.join(instructions)
+		print('\n'.join(instructions), file=outfile)
 
 	# Define an order
 	order = []
@@ -47,7 +49,7 @@ if __name__ == '__main__':
 	for doc, part in order:
 		# Setup
 		for out in out_files:
-			print >> out, "\n# %s %s\n" % (doc, part)
+			print("\n# %s %s\n" % (doc, part), file=out)
 
 		text = gold[doc][part]['text']
 
@@ -75,8 +77,8 @@ if __name__ == '__main__':
 		groups = coreference.confusion_groups(gold_mentions, auto_mentions, gold_clusters, auto_clusters)
 
 		covered = coreference_rendering.print_cluster_errors(groups, out_cluster_errors, out_cluster_context, text, gold_parses, gold_heads, auto_clusters, gold_clusters, gold_mentions)
-		print >> out_cluster_errors, "Entirely missing or extra\n"
-		print >> out_cluster_context, "Entirely missing or extra\n"
+		print("Entirely missing or extra\n", file=out_cluster_errors)
+		print("Entirely missing or extra\n", file=out_cluster_context)
 		coreference_rendering.print_cluster_missing(out_cluster_errors, out_cluster_context, out_cluster_missing, text, gold_cluster_set, covered, gold_parses, gold_heads)
 		coreference_rendering.print_cluster_extra(out_cluster_errors, out_cluster_context, out_cluster_extra, text, auto_cluster_set, covered, gold_parses, gold_heads)
 

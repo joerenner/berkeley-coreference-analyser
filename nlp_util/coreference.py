@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 from collections import defaultdict
 import string
 
-import head_finder
+from . import head_finder
+from six.moves import range
 
 # TODO: Look into semantic head finding (current is syntactically biased)
 
@@ -96,7 +99,7 @@ def set_of_mentions(clusters):
 
 def hash_clustering(clustering):
 	clustering = [list(v) for v in clustering]
-	for i in xrange(len(clustering)):
+	for i in range(len(clustering)):
 		clustering[i].sort()
 		clustering[i] = tuple(clustering[i])
 	clustering.sort()
@@ -238,7 +241,7 @@ pronoun_properties = {
 }
 
 if __name__ == '__main__':
-	print "Running doctest"
+	print("Running doctest")
 	import doctest
 	doctest.testmod()
 

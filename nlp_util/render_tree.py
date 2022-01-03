@@ -3,7 +3,10 @@
 # vim: set ts=2 sw=2 noet:
 '''Various string representations of trees.'''
 
-import pstree, parse_errors
+from __future__ import absolute_import
+from __future__ import print_function
+from . import pstree, parse_errors
+from six.moves import range
 
 # TODO:todo Fix handling of traces throughout
 # Handling of unary order
@@ -254,8 +257,8 @@ def text_coloured_errors(tree, gold=None, depth=0, single_line=False, missing=No
 				text = ' ' + text
 			below.append([subtree.span[0], subtree.span[1], text])
 		# add missing brackets that surround subtrees
-		for length in xrange(1, len(below)):
-			for i in xrange(len(below)):
+		for length in range(1, len(below)):
+			for i in range(len(below)):
 				j = i + length
 				if i == 0 and j == len(below) - 1:
 					continue
@@ -268,7 +271,7 @@ def text_coloured_errors(tree, gold=None, depth=0, single_line=False, missing=No
 							if char not in '\n\t':
 								break
 							start += char
-						for k in xrange(i, j+1):
+						for k in range(i, j+1):
 							below[k][2] = '\n\t'.join(below[k][2].split('\n'))
 						below[i][2] = start + start_missing + '(' + error[2] + end_colour + below[i][2]
 						below[j][2] += start_missing + ')' + end_colour
@@ -361,7 +364,7 @@ def cut_text_below(text, depth):
 	return ntext[::-1]
 
 if __name__ == '__main__':
-	print "Running doctest"
+	print("Running doctest")
 	import doctest
 	doctest.testmod()
 

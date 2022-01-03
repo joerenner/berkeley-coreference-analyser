@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=2 sw=2 noet:
 
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
+from six.moves import range
 
 #TODO: Handle other langauges
 
@@ -52,7 +55,7 @@ def first_search(tree, options, head_map):
 	return False
 
 def last_search(tree, options, head_map):
-	for i in xrange(len(tree.subtrees) - 1, -1, -1):
+	for i in range(len(tree.subtrees) - 1, -1, -1):
 		subtree = tree.subtrees[i]
 		if get_head(head_map, subtree)[2] in options or subtree.label in options:
 			add_head(head_map, tree, get_head(head_map, subtree))
@@ -114,7 +117,7 @@ def collins_find_heads(tree, head_map=None):
 	# Look through and take the first/last occurrence that matches
 	info = collins_mapping_table[tree.label]
 	for label in info[1]:
-		for i in xrange(len(tree.subtrees)):
+		for i in range(len(tree.subtrees)):
 			if info[0] == 'right':
 				i = len(tree.subtrees) - i - 1
 			subtree = tree.subtrees[i]
@@ -298,7 +301,7 @@ Else return the last word
 
 
 if __name__ == "__main__":
-	print "Running doctest"
+	print("Running doctest")
 	import doctest
 	doctest.testmod()
 

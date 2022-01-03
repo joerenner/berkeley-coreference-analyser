@@ -6,6 +6,8 @@
 powerful, and flexible, alternatives out there, but this was what I needed at
 the time.'''
 
+from __future__ import absolute_import
+from __future__ import print_function
 import sys, time
 
 def header(args, out=sys.stdout):
@@ -15,24 +17,24 @@ def header(args, out=sys.stdout):
 	header += ' '.join(args)
 	header += "\n#"
 	if type(out) == type(sys.stdout):
-		print >> out, header
+		print(header, file=out)
 	elif type(out) == type([]):
 		for outfile in out:
-			print >> outfile, header
+			print(header, file=outfile)
 	else:
-		print >> sys.stderr, "Invalid list of output files passed to header"
+		print("Invalid list of output files passed to header", file=sys.stderr)
 		sys.exit(1)
 
 def argcheck(argv, minargs, maxargs, desc, arg_desc, further_desc=''):
 	if minargs <= len(argv) <= maxargs:
 		return
-	print >> sys.stderr, "{}\n  {} {}".format(desc, argv[0], arg_desc)
+	print("{}\n  {} {}".format(desc, argv[0], arg_desc), file=sys.stderr)
 	if len(further_desc) > 0:
-		print >> sys.stderr, "\n{}".format(further_desc)
-	print >> sys.stderr, "Expected {} to {} args, got:\n{}".format(minargs - 1, maxargs - 1, ' '.join(argv))
+		print("\n{}".format(further_desc), file=sys.stderr)
+	print("Expected {} to {} args, got:\n{}".format(minargs - 1, maxargs - 1, ' '.join(argv)), file=sys.stderr)
 	sys.exit(1)
 
 if __name__ == "__main__":
-	print "Running doctest"
+	print("Running doctest")
 	import doctest
 	doctest.testmod()

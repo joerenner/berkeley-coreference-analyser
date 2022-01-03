@@ -12,6 +12,8 @@ equivalent file:  bn/voa/02/voa_0220.v2_auto_conll
 intended header:  #begin document (bn/voa/02/voa_0220); part 000
 '''
 
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 from nlp_util import init, coreference_reading, coreference_rendering
 
@@ -64,7 +66,7 @@ def read_ims(auto_src, gold_src):
 	return auto, gold
 
 def read_opennlp(auto_src, gold_src):
-	print "OpenNLP support is under development."
+	print("OpenNLP support is under development.")
 
 def read_reconcile(auto_src, gold_src):
 	'''Reconcile output is in a separate file for each doc.'''
@@ -73,7 +75,7 @@ def read_reconcile(auto_src, gold_src):
 	return multifile_process(path, call)
 
 def read_relaxcor(auto_src, gold_src):
-	print "RelaxCor support is under development."
+	print("RelaxCor support is under development.")
 
 def read_stanford_xml(auto_src, gold_src):
 	'''Stanford without conll settings producesone xml file for each input'''
@@ -106,7 +108,7 @@ if __name__ == '__main__':
 		'stanford': read_stanford,
 		'uiuc': read_uiuc
 	}
-	init.argcheck(sys.argv, 5, 5, "Translate a system output into the CoNLL format", "<prefix> <[{}]> <dir | file> <gold dir>".format(','.join(formats.keys())))
+	init.argcheck(sys.argv, 5, 5, "Translate a system output into the CoNLL format", "<prefix> <[{}]> <dir | file> <gold dir>".format(','.join(list(formats.keys()))))
 
 	out = open(sys.argv[1] + '.out', 'w')
 	log = open(sys.argv[1] + '.log', 'w')
@@ -115,8 +117,8 @@ if __name__ == '__main__':
 	auto_src = sys.argv[3]
 	gold_src = sys.argv[4]
 	if sys.argv[2] not in formats:
-		print "Invalid format.  Valid options are:"
-		print '\n'.join(formats.keys())
+		print("Invalid format.  Valid options are:")
+		print('\n'.join(list(formats.keys())))
 		sys.exit(1)
 	auto, gold = formats[sys.argv[2]](auto_src, gold_src)
 
